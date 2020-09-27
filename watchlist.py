@@ -1,5 +1,5 @@
 # This program can generate a table based on several ta inducators frequently used by traders, to have an overall view of the market
-# Dependancies: 1. fno.csv(added along with this app) file 2.Talib library.You can check online or mail me for help on talib installation
+# Dependancies: 1. fno.csv file (added along with this app) 2.Talib library.You can check online or mail me for help on talib installation
 
 from datetime import date
 import pandas as pd
@@ -105,9 +105,9 @@ def MACD(stockData): #Moving Average Convergence Divergence
             stockData.loc[i, 'MACDU'] = macdSignal[-1] #MACD the previous day (ultimate day)
             stockData.loc[i, 'MACDPU'] = macdSignal[-2] #MACD the day before (penultimate day)
             if(macdSignal[-2] < 0 and macdSignal[-1] > 0):
-                stockData.loc[i, 'MACDStrat'] = "Buy"
+                stockData.loc[i, 'MACDStrat'] = "Buy" #Crossover Buy
             if(macdSignal[-2] > 0 and macdSignal[-1] < 0):
-                stockData.loc[i, 'MACDStrat'] = "Sell"
+                stockData.loc[i, 'MACDStrat'] = "Sell" #Crossover Sell
             if(macdSignal[-2] < 0 and macdSignal[-1] < 0 and macdSignal[-1] < macdSignal[-2]):
                 stockData.loc[i, 'MACDStrat'] = "Neg D" #Negative Divergence
             if(macdSignal[-2] > 0 and macdSignal[-1] > 0 and macdSignal[-1] > macdSignal[-2]):
@@ -121,7 +121,7 @@ def MACD(stockData): #Moving Average Convergence Divergence
                 stockData.loc[i, 'StockID']))
     return stockData
 
-def RSI(stockData):
+def RSI(stockData): #Rising Strength Index
     for i in range(len(stockData)):
         try:
             Data =nsepy.get_history(stockData.loc[i,'StockID'],start=startDate,end=endDate)
@@ -141,7 +141,7 @@ def RSI(stockData):
         except:
             print("Error updating rsi of {} ".format(
                 stockData.loc[i, 'StockID']))
-    return stockData #Rising Strength Index
+    return stockData
 
 def Bounce(stockData): #Daily Swing uptrend/downtrend indicator
     for i in range(len(stockData)):
@@ -167,7 +167,7 @@ def Bounce(stockData): #Daily Swing uptrend/downtrend indicator
             stockData.loc[i, 'Trend'] = "Downtrend" #Previous swing high's date
     return stockData
 
-def PCR(stockData): #Put to call ratio taling OI data and volume into consideration
+def PCR(stockData): #Put to call ratio taking OI data and volume into consideration
     url = "https://www.bloombergquint.com/feapi/markets/options/put-call-ratio?security-type=stock&limit=200"
     try:
         content = requests.get(url).json()['put-call-ratio']
@@ -202,7 +202,7 @@ def PCR(stockData): #Put to call ratio taling OI data and volume into considerat
                   stockData.loc[i, 'StockID'])
     return stockData
 
-def Candlestick(stockData): #Recognise candlestick data using ta library
+def Candlestick(stockData): #Recognise candlestick data using talib
     candle_names = ta.get_function_groups()['Pattern Recognition']
     for i in range(len(stockData)):
         try:
@@ -221,7 +221,7 @@ def Candlestick(stockData): #Recognise candlestick data using ta library
             data.drop(['Open','High','Low','Close'],inplace=True,axis=1)
             try:
                 for j in range(len(data)):
-                    #You are welcome to implement a different candlestick score pattern when more than one pattern is present by prioritizing some candles too
+                    #You are welcome to implement a different cumulative candlestick score pattern when more than one pattern is present by prioritizing stronger candlestick patterns.
                     score=sum(data[data!=0].iloc[j].dropna())/100
                     data.loc[j,'Pattern']=','.join(data[data!=0].iloc[j].dropna().index.to_list()).replace('CDL','')
                     if(score>0):
